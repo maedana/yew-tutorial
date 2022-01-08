@@ -3,35 +3,41 @@ use yew::prelude::*;
 mod components;
 use components::video_details::*;
 use components::videos_list::*;
+use reqwasm::http::Request;
 
 #[function_component(App)]
 fn app() -> Html {
-    let videos = vec![
-        Video {
-            id: 1,
-            title: "Building and breaking things".to_string(),
-            speaker: "John Doe".to_string(),
-            url: "https://youtu.be/PsaFVLr8t4E".to_string(),
-        },
-        Video {
-            id: 2,
-            title: "The development process".to_string(),
-            speaker: "Jane Smith".to_string(),
-            url: "https://youtu.be/PsaFVLr8t4E".to_string(),
-        },
-        Video {
-            id: 3,
-            title: "The Web 7.0".to_string(),
-            speaker: "Matt Miller".to_string(),
-            url: "https://youtu.be/PsaFVLr8t4E".to_string(),
-        },
-        Video {
-            id: 4,
-            title: "Mouseless development".to_string(),
-            speaker: "Tom Jerry".to_string(),
-            url: "https://youtu.be/PsaFVLr8t4E".to_string(),
-        },
-    ];
+    // MEMO: ReactのHooksと同じだと思うがちゃんと理解してない
+    let videos = use_state(|| vec![]);
+    {
+        // MEMO: cloneは仕方のないこと?
+        let videos = videos.clone();
+        // MEMO: ReactのHooksと同じだと思うがちゃんと理解してない
+        use_effect_with_deps(
+            // MEMO: moveって何だっけ?
+            move |_| {
+                // MEMO: cloneは仕方のないこと?
+                let videos = videos.clone();
+                // MEMO: ここも理解出来てない
+                // spawn_localって何? moveって何だっけ?
+                wasm_bindgen_futures::spawn_local(async move {
+                    let fetched_videos: Vec<Video> = Request::get("/tutorial/data.json")
+                        .send()
+                        .await
+                        // MEMO: Demoなのでunwrapしてるがホントはちゃんとエラーハンドリングするべき
+                        .unwrap()
+                        .json()
+                        .await
+                        // MEMO: Demoなのでunwrapしてるがホントはちゃんとエラーハンドリングするべき
+                        .unwrap();
+                    videos.set(fetched_videos);
+                });
+                // MEMO:  || () の部分理解出来てない
+                || ()
+            },
+            (),
+        );
+    }
 
     // MEMO: use_stateは後から説明があるらしい。
     // MEMO: Don't worry about the use_state right now, we will come back to that later.  とのこと
@@ -53,7 +59,8 @@ fn app() -> Html {
           <h1>{ "RustConf Explorer" }</h1>
           <div>
               <h3>{"Videos to watch"}</h3>
-              <VideosList videos={videos} on_click={on_video_select.clone()} />
+              // MEMO: Request::getで取得したデータをセットする仕組みにしたときにvideosを(*videos).clone()に変えたがこれってなんで必要なの? アスタリスクは参照外しってことでいいのかな?
+              <VideosList videos={(*videos).clone()} on_click={on_video_select.clone()} />
           </div>
           // MEMO: Note the trick we pulled with { for details }. Option<_> implements Iterator so we can use it to display the only element returned by the Iterator with the { for ... } syntax. らしい
           { for details }

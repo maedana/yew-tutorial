@@ -1,8 +1,9 @@
+use serde::Deserialize;
 use yew::prelude::*;
 
 // MEMO: Clone, PartialEqの意味わかってない
 // MEMO: 外から値をセットしたいので構造体、構造体メンバともにpubに
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Deserialize)]
 pub struct Video {
     pub id: usize,
     pub title: String,
