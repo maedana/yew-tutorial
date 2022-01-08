@@ -1,11 +1,7 @@
 use yew::prelude::*;
 
-struct Video {
-    id: usize,
-    title: String,
-    speaker: String,
-    url: String,
-}
+mod components;
+use components::videos_list::*;
 
 #[function_component(App)]
 fn app() -> Html {
@@ -35,21 +31,13 @@ fn app() -> Html {
             url: "https://youtu.be/PsaFVLr8t4E".to_string(),
         },
     ];
-    let videos = videos
-        .iter()
-        .map(|video| {
-            html! {
-                <p>{format!("{}: {}", video.speaker, video.title)}</p>
-            }
-        })
-        .collect::<Html>();
 
     html! {
       <>
           <h1>{ "RustConf Explorer" }</h1>
           <div>
               <h3>{"Videos to watch"}</h3>
-              { videos }
+              <VideosList videos={videos} />
           </div>
           <div>
               <h3>{ "John Doe: Building and breaking things" }</h3>
