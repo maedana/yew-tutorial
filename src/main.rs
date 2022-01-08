@@ -1,6 +1,7 @@
 use yew::prelude::*;
 
 mod components;
+use components::video_details::*;
 use components::videos_list::*;
 
 #[function_component(App)]
@@ -32,17 +33,30 @@ fn app() -> Html {
         },
     ];
 
+    // MEMO: use_stateは後から説明があるらしい。
+    // MEMO: Don't worry about the use_state right now, we will come back to that later.  とのこと
+    let selected_video = use_state(|| None);
+
+    let on_video_select = {
+        let selected_video = selected_video.clone();
+        Callback::from(move |video: Video| selected_video.set(Some(video)))
+    };
+
+    let details = selected_video.as_ref().map(|video| {
+        html! {
+            <VideoDetails video={video.clone()} />
+        }
+    });
+
     html! {
       <>
           <h1>{ "RustConf Explorer" }</h1>
           <div>
               <h3>{"Videos to watch"}</h3>
-              <VideosList videos={videos} />
+              <VideosList videos={videos} on_click={on_video_select.clone()} />
           </div>
-          <div>
-              <h3>{ "John Doe: Building and breaking things" }</h3>
-              <img src="https://via.placeholder.com/640x360.png?text=Video+Player+Placeholder" alt="video thumbnail" />
-          </div>
+          // MEMO: Note the trick we pulled with { for details }. Option<_> implements Iterator so we can use it to display the only element returned by the Iterator with the { for ... } syntax. らしい
+          { for details }
       </>
     }
 }
